@@ -8,6 +8,7 @@ import GuidesPage from './pages/guides'
 import ProfilePage from './pages/profile'
 import SymptomsPage from './pages/symptoms'
 import OnboardingPage from './pages/onboarding'
+import AuthPage from './pages/auth'
 import { useAppStore } from './stores/app-store'
 
 const queryClient = new QueryClient()
@@ -24,6 +25,7 @@ export default function App() {
         <Routes>
           <Route path="/" element={<RootRedirect />} />
           <Route path="/onboarding" element={<OnboardingPage />} />
+          <Route path="/auth" element={<AuthPage />} />
           <Route element={<AppShell />}>
             <Route path="/home" element={<HomePage />} />
             <Route path="/checkin" element={<CheckInPage />} />

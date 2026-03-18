@@ -4,6 +4,8 @@ import { SYMPTOM_CATEGORIES, getSymptomsForBirthType, isSafetySymptom } from '..
 import { SeverityPicker } from '../components/ui/severity-picker'
 import { SafetyResourceCard } from '../components/ui/safety-resource-card'
 import { useAppStore } from '../stores/app-store'
+import { useInsertLogs } from '../hooks/use-symptom-logs'
+import { supabase } from '../lib/supabase'
 import { X } from '@phosphor-icons/react'
 import type { SymptomCategory } from '../types/database'
 
@@ -27,10 +29,34 @@ export default function CheckInPage() {
     setSeverities(s => ({ ...s, [symptomKey]: value }))
   }
 
+  const insertLogs = useInsertLogs()
+
   async function handleSubmit() {
     setIsSubmitting(true)
 
-    // Check if any safety symptoms are rated >= 4
+    const { data: { user } } = await supabase.auth.getUser()
+    if (user) {
+      const now = new Date().toISOString()
+      const rows = Object.entries(severities)
+        .filter(([, val]) => val !== undefined)
+        .map(([symptomKey, severity]) => {
+          const cat = SYMPTOM_CATEGORIES.find(c =>
+            c.symptoms.some(s => s.key === symptomKey)
+          )
+          return {
+            user_id: user.id,
+            logged_at: now,
+            log_type: 'checkin' as const,
+            category: cat!.id,
+            symptom_key: symptomKey,
+            severity: severity!,
+            note: notes[cat!.id] ?? null,
+            is_custom: false,
+          }
+        })
+      if (rows.length) await insertLogs.mutateAsync(rows)
+    }
+
     const hasSafetyTrigger = Object.entries(severities).some(
       ([key, val]) => (val ?? 0) >= 4 && isSafetySymptom(key)
     )

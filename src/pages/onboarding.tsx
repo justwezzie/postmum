@@ -3,9 +3,10 @@ import { useNavigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { useAppStore, type RecoveryFocus, type WeeksSinceBirth } from '../stores/app-store'
 import type { BirthType } from '../types/database'
+import { supabase } from '../lib/supabase'
 import { CaretLeft, Warning, Heart } from '@phosphor-icons/react'
 
-type Step = 'welcome' | 'pathway' | 'questions' | 'goals'
+type Step = 'welcome' | 'pathway' | 'questions' | 'goals' | 'account'
 
 interface DetailsForm {
   displayName: string
@@ -95,6 +96,12 @@ export default function OnboardingPage() {
   const [weeklyTarget, setWeeklyTarget] = useState(3)
   const [goalsFocusOpen, setGoalsFocusOpen] = useState(false)
 
+  // Account state
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [authError, setAuthError] = useState<string | null>(null)
+  const [authLoading, setAuthLoading] = useState(false)
+
   const { register, handleSubmit, formState: { errors, isValid } } = useForm<DetailsForm>({
     mode: 'onChange',
   })
@@ -125,7 +132,39 @@ export default function OnboardingPage() {
   function onDetailsSubmit(data: DetailsForm) {
     setGoal(recoveryFocus, weeklyTarget)
     completeOnboarding(data.displayName, data.babyBirthDate)
-    navigate('/home')
+    setStep('account')
+  }
+
+  async function handleCreateAccount(e: React.FormEvent) {
+    e.preventDefault()
+    setAuthError(null)
+    setAuthLoading(true)
+    try {
+      const { data: authData, error: signUpError } = await supabase.auth.signUp({ email, password })
+      if (signUpError) throw signUpError
+
+      const user = authData.user
+      if (user) {
+        const store = useAppStore.getState()
+        await supabase.from('users').upsert({
+          id: user.id,
+          email,
+          display_name: store.displayName,
+          baby_birth_date: store.babyBirthDate,
+          birth_type: store.birthType,
+          number_of_children: store.numberOfChildren,
+          is_first_of_type: store.isFirstOfType,
+          weeks_since_birth: store.weeksSinceBirth,
+          recovery_focus: store.recoveryFocus,
+          weekly_routine_target: store.weeklyRoutineTarget,
+        } as Record<string, unknown>)
+      }
+      navigate('/home')
+    } catch (err: unknown) {
+      setAuthError(err instanceof Error ? err.message : 'Something went wrong')
+    } finally {
+      setAuthLoading(false)
+    }
   }
 
   const questionsReady = numberOfChildren !== null && isFirstOfType !== null && weeksSinceBirth !== null
@@ -515,6 +554,107 @@ export default function OnboardingPage() {
               </button>
             </form>
           </div>
+        </div>
+      )}
+
+      {/* ── STEP: ACCOUNT ── */}
+      {step === 'account' && (
+        <div className="flex flex-col min-h-dvh px-5 pt-20 pb-8">
+          <div className="mb-8">
+            <div
+              className="w-12 h-12 rounded-2xl flex items-center justify-center mb-4"
+              style={{ background: '#E8F0DC' }}
+            >
+              <span className="text-2xl">🌿</span>
+            </div>
+            <h2 className="text-xl font-bold" style={{ color: 'var(--color-pm-text)', letterSpacing: '-0.02em' }}>
+              Save your progress
+            </h2>
+            <p className="text-sm mt-1" style={{ color: 'var(--color-pm-text-secondary)' }}>
+              Create a free account to keep your data safe and access it on any device.
+            </p>
+          </div>
+
+          <form onSubmit={handleCreateAccount} className="flex flex-col gap-4 flex-1">
+            <div className="flex flex-col gap-1.5">
+              <label className="text-xs font-semibold" style={{ color: 'var(--color-pm-text-muted)' }}>
+                Email
+              </label>
+              <input
+                type="email"
+                value={email}
+                onChange={e => setEmail(e.target.value)}
+                required
+                placeholder="you@example.com"
+                className="w-full px-4 py-3.5 rounded-2xl text-sm outline-none"
+                style={{
+                  background: 'var(--color-pm-surface)',
+                  border: '1.5px solid var(--color-pm-border)',
+                  color: 'var(--color-pm-text)',
+                }}
+              />
+            </div>
+
+            <div className="flex flex-col gap-1.5">
+              <label className="text-xs font-semibold" style={{ color: 'var(--color-pm-text-muted)' }}>
+                Password
+              </label>
+              <input
+                type="password"
+                value={password}
+                onChange={e => setPassword(e.target.value)}
+                required
+                placeholder="Min. 6 characters"
+                minLength={6}
+                className="w-full px-4 py-3.5 rounded-2xl text-sm outline-none"
+                style={{
+                  background: 'var(--color-pm-surface)',
+                  border: '1.5px solid var(--color-pm-border)',
+                  color: 'var(--color-pm-text)',
+                }}
+              />
+            </div>
+
+            {authError && (
+              <p className="text-xs px-1" style={{ color: 'var(--color-severity-severe)' }}>
+                {authError}
+              </p>
+            )}
+
+            <button
+              type="submit"
+              disabled={authLoading || !email || password.length < 6}
+              className="w-full py-4 rounded-2xl text-sm font-semibold transition-opacity active:opacity-80 disabled:opacity-50"
+              style={{ background: 'var(--color-pm-primary)', color: '#fff' }}
+            >
+              {authLoading ? 'Creating account…' : 'Create account & continue'}
+            </button>
+
+            <button
+              type="button"
+              onClick={() => navigate('/home')}
+              className="w-full py-3 rounded-2xl text-sm font-medium transition-opacity active:opacity-60"
+              style={{
+                background: 'transparent',
+                color: 'var(--color-pm-text-muted)',
+                border: '1.5px solid var(--color-pm-border)',
+              }}
+            >
+              Skip for now
+            </button>
+
+            <p className="text-xs text-center" style={{ color: 'var(--color-pm-text-muted)' }}>
+              Already have an account?{' '}
+              <button
+                type="button"
+                onClick={() => navigate('/auth')}
+                className="font-semibold"
+                style={{ color: 'var(--color-pm-primary)' }}
+              >
+                Sign in
+              </button>
+            </p>
+          </form>
         </div>
       )}
     </div>

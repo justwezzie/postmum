@@ -1,5 +1,7 @@
 import { useState } from 'react'
 import { useAppStore } from '../../stores/app-store'
+import { useInsertLogs } from '../../hooks/use-symptom-logs'
+import { supabase } from '../../lib/supabase'
 import { BottomSheet } from '../ui/bottom-sheet'
 import { SeverityPicker } from '../ui/severity-picker'
 import { SafetyResourceCard } from '../ui/safety-resource-card'
@@ -67,7 +69,20 @@ export function QuickLogSheet() {
     if (!entry.category || !entry.symptomKey || !entry.severity) return
     setIsSubmitting(true)
 
-    // TODO: persist to Supabase when credentials available
+    const { data: { user } } = await supabase.auth.getUser()
+    if (user) {
+      await insertLogs.mutateAsync([{
+        user_id: user.id,
+        logged_at: new Date().toISOString(),
+        log_type: 'quick',
+        category: entry.category,
+        symptom_key: entry.symptomKey,
+        severity: entry.severity,
+        note: entry.note || null,
+        is_custom: entry.symptomKey.startsWith('custom_'),
+      }])
+    }
+
     const isSafety = isSafetySymptom(entry.symptomKey) && entry.severity >= 4
     setIsSubmitting(false)
 
@@ -79,6 +94,7 @@ export function QuickLogSheet() {
   }
 
   const birthType = useAppStore(s => s.birthType)
+  const insertLogs = useInsertLogs()
   const categoryDef = SYMPTOM_CATEGORIES.find(c => c.id === entry.category)
   const filteredSymptoms = categoryDef ? getSymptomsForBirthType(categoryDef, birthType) : []
   const title = step === 'category' ? 'Quick Log'
