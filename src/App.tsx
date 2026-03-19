@@ -4,7 +4,7 @@ import { AppShell } from './components/layout/app-shell'
 import HomePage from './pages/home'
 import CheckInPage from './pages/checkin'
 import RoutinesPage from './pages/routines'
-import GuidesPage from './pages/guides'
+import CommunityPage from './pages/guides'
 import ProfilePage from './pages/profile'
 import SymptomsPage from './pages/symptoms'
 import OnboardingPage from './pages/onboarding'
@@ -30,7 +30,7 @@ export default function App() {
             <Route path="/home" element={<HomePage />} />
             <Route path="/checkin" element={<CheckInPage />} />
             <Route path="/routines" element={<RoutinesPage />} />
-            <Route path="/guides" element={<GuidesPage />} />
+            <Route path="/community" element={<CommunityPage />} />
             <Route path="/profile" element={<ProfilePage />} />
             <Route path="/symptoms" element={<SymptomsPage />} />
           </Route>

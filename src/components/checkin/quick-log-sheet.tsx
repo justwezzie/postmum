@@ -1,7 +1,8 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { useAppStore } from '../../stores/app-store'
 import { useInsertLogs } from '../../hooks/use-symptom-logs'
-import { supabase } from '../../lib/supabase'
+import { useAuth } from '../../hooks/use-auth'
 import { BottomSheet } from '../ui/bottom-sheet'
 import { SeverityPicker } from '../ui/severity-picker'
 import { SafetyResourceCard } from '../ui/safety-resource-card'
@@ -28,13 +29,19 @@ const INITIAL_ENTRY: LogEntry = {
 }
 
 export function QuickLogSheet() {
+  const navigate = useNavigate()
   const { isQuickLogOpen, closeQuickLog } = useAppStore()
+  const { supabaseUser } = useAuth()
+  const insertLogs = useInsertLogs()
+  const birthType = useAppStore(s => s.birthType)
+  const shouldShowSafetyResource = useAppStore(s => s.shouldShowSafetyResource)
+
   const [step, setStep] = useState<Step>('category')
   const [entry, setEntry] = useState<LogEntry>(INITIAL_ENTRY)
   const [customInput, setCustomInput] = useState('')
   const [showSafety, setShowSafety] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const shouldShowSafetyResource = useAppStore(s => s.shouldShowSafetyResource)
+  const [saveError, setSaveError] = useState<string | null>(null)
 
   function handleClose() {
     setStep('category')
@@ -67,12 +74,15 @@ export function QuickLogSheet() {
 
   async function handleSubmit() {
     if (!entry.category || !entry.symptomKey || !entry.severity) return
+    if (!supabaseUser) {
+      setSaveError('You need to be signed in to save logs.')
+      return
+    }
+    setSaveError(null)
     setIsSubmitting(true)
-
-    const { data: { user } } = await supabase.auth.getUser()
-    if (user) {
+    try {
       await insertLogs.mutateAsync([{
-        user_id: user.id,
+        user_id: supabaseUser.id,
         logged_at: new Date().toISOString(),
         log_type: 'quick',
         category: entry.category,
@@ -81,20 +91,19 @@ export function QuickLogSheet() {
         note: entry.note || null,
         is_custom: entry.symptomKey.startsWith('custom_'),
       }])
-    }
-
-    const isSafety = isSafetySymptom(entry.symptomKey) && entry.severity >= 4
-    setIsSubmitting(false)
-
-    if (isSafety && shouldShowSafetyResource()) {
-      setShowSafety(true)
-    } else {
-      handleClose()
+      const isSafety = isSafetySymptom(entry.symptomKey) && entry.severity >= 4
+      if (isSafety && shouldShowSafetyResource()) {
+        setShowSafety(true)
+      } else {
+        handleClose()
+      }
+    } catch {
+      setSaveError('Failed to save. Please try again.')
+    } finally {
+      setIsSubmitting(false)
     }
   }
 
-  const birthType = useAppStore(s => s.birthType)
-  const insertLogs = useInsertLogs()
   const categoryDef = SYMPTOM_CATEGORIES.find(c => c.id === entry.category)
   const filteredSymptoms = categoryDef ? getSymptomsForBirthType(categoryDef, birthType) : []
   const title = step === 'category' ? 'Quick Log'
@@ -229,6 +238,21 @@ export function QuickLogSheet() {
                 color: 'var(--color-pm-text)',
               }}
             />
+            {saveError && (
+              <p className="text-xs px-1" style={{ color: 'var(--color-severity-severe)' }}>
+                {saveError}{' '}
+                {!supabaseUser && (
+                  <button
+                    type="button"
+                    onClick={() => { handleClose(); navigate('/auth') }}
+                    className="underline font-semibold"
+                    style={{ color: 'var(--color-severity-severe)' }}
+                  >
+                    Sign up now
+                  </button>
+                )}
+              </p>
+            )}
             <button
               type="button"
               onClick={handleSubmit}

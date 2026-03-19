@@ -5,7 +5,7 @@ import { SeverityPicker } from '../components/ui/severity-picker'
 import { SafetyResourceCard } from '../components/ui/safety-resource-card'
 import { useAppStore } from '../stores/app-store'
 import { useInsertLogs } from '../hooks/use-symptom-logs'
-import { supabase } from '../lib/supabase'
+import { useAuth } from '../hooks/use-auth'
 import { X } from '@phosphor-icons/react'
 import type { SymptomCategory } from '../types/database'
 
@@ -21,6 +21,8 @@ export default function CheckInPage() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const shouldShowSafetyResource = useAppStore(s => s.shouldShowSafetyResource)
 
+  const { supabaseUser } = useAuth()
+  const insertLogs = useInsertLogs()
   const birthType = useAppStore(s => s.birthType)
   const activeCat = SYMPTOM_CATEGORIES.find(c => c.id === activeTab)!
   const activeSymptoms = getSymptomsForBirthType(activeCat, birthType)
@@ -29,13 +31,10 @@ export default function CheckInPage() {
     setSeverities(s => ({ ...s, [symptomKey]: value }))
   }
 
-  const insertLogs = useInsertLogs()
-
   async function handleSubmit() {
+    if (!supabaseUser) return
     setIsSubmitting(true)
-
-    const { data: { user } } = await supabase.auth.getUser()
-    if (user) {
+    try {
       const now = new Date().toISOString()
       const rows = Object.entries(severities)
         .filter(([, val]) => val !== undefined)
@@ -44,7 +43,7 @@ export default function CheckInPage() {
             c.symptoms.some(s => s.key === symptomKey)
           )
           return {
-            user_id: user.id,
+            user_id: supabaseUser.id,
             logged_at: now,
             log_type: 'checkin' as const,
             category: cat!.id,
@@ -55,18 +54,17 @@ export default function CheckInPage() {
           }
         })
       if (rows.length) await insertLogs.mutateAsync(rows)
-    }
 
-    const hasSafetyTrigger = Object.entries(severities).some(
-      ([key, val]) => (val ?? 0) >= 4 && isSafetySymptom(key)
-    )
-
-    setIsSubmitting(false)
-
-    if (hasSafetyTrigger && shouldShowSafetyResource()) {
-      setShowSafety(true)
-    } else {
-      navigate('/home')
+      const hasSafetyTrigger = Object.entries(severities).some(
+        ([key, val]) => (val ?? 0) >= 4 && isSafetySymptom(key)
+      )
+      if (hasSafetyTrigger && shouldShowSafetyResource()) {
+        setShowSafety(true)
+      } else {
+        navigate('/home')
+      }
+    } finally {
+      setIsSubmitting(false)
     }
   }
 

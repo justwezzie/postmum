@@ -4,7 +4,7 @@ import { useForm } from 'react-hook-form'
 import { useAppStore, type RecoveryFocus, type WeeksSinceBirth } from '../stores/app-store'
 import type { BirthType } from '../types/database'
 import { supabase } from '../lib/supabase'
-import { CaretLeft, Warning, Heart } from '@phosphor-icons/react'
+import { CaretLeft, Warning, Heart, Info } from '@phosphor-icons/react'
 
 type Step = 'welcome' | 'pathway' | 'questions' | 'goals' | 'account'
 
@@ -91,6 +91,8 @@ export default function OnboardingPage() {
   const [isFirstOfType, setIsFirstOfType] = useState<boolean | null>(null)
   const [weeksSinceBirth, setWeeksSinceBirth] = useState<WeeksSinceBirth | null>(null)
 
+  const [showFirstTypeInfo, setShowFirstTypeInfo] = useState(false)
+
   // Goals state
   const [recoveryFocus, setRecoveryFocus] = useState<RecoveryFocus>('core_pelvic')
   const [weeklyTarget, setWeeklyTarget] = useState(3)
@@ -146,7 +148,7 @@ export default function OnboardingPage() {
       const user = authData.user
       if (user) {
         const store = useAppStore.getState()
-        await supabase.from('users').upsert({
+        const { error: upsertError } = await supabase.from('users').upsert({
           id: user.id,
           email,
           display_name: store.displayName,
@@ -158,6 +160,7 @@ export default function OnboardingPage() {
           recovery_focus: store.recoveryFocus,
           weekly_routine_target: store.weeklyRoutineTarget,
         } as Record<string, unknown>)
+        if (upsertError) throw upsertError
       }
       navigate('/home')
     } catch (err: unknown) {
@@ -169,7 +172,14 @@ export default function OnboardingPage() {
 
   const questionsReady = numberOfChildren !== null && isFirstOfType !== null && weeksSinceBirth !== null
   const focusDef = RECOVERY_FOCUS_OPTIONS.find(f => f.value === recoveryFocus)!
-  const birthLabel = selectedPathway?.type.includes('csection') ? 'C-section' : 'birth'
+  const isCsection = selectedPathway?.type === 'planned_csection' || selectedPathway?.type === 'emergency_csection'
+  const multipleChildren = numberOfChildren !== null && numberOfChildren > 1
+  const firstTypeQuestion = multipleChildren
+    ? (isCsection ? 'Is this your first C-section?' : 'Is this your first vaginal birth?')
+    : 'Is this your first birth?'
+  const firstTypeInfoText = isCsection
+    ? "C-section recovery differs from vaginal birth recovery, even if you've given birth before. Your answer helps us tailor advice for this specific recovery type."
+    : "Vaginal birth recovery varies depending on your history. Your answer helps us give advice specific to this kind of recovery."
 
   return (
     <div className="flex flex-col min-h-dvh" style={{ background: 'var(--color-pm-bg)' }}>
@@ -313,7 +323,11 @@ export default function OnboardingPage() {
                 {CHILDREN_OPTIONS.map(opt => (
                   <button
                     key={opt.value}
-                    onClick={() => setNumberOfChildren(opt.value)}
+                    onClick={() => {
+                      setNumberOfChildren(opt.value)
+                      setIsFirstOfType(null)
+                      setShowFirstTypeInfo(false)
+                    }}
                     className="flex-1 py-3 rounded-xl text-sm font-semibold transition-all active:scale-95"
                     style={{
                       background: numberOfChildren === opt.value ? 'var(--color-pm-primary)' : 'var(--color-pm-surface)',
@@ -329,9 +343,29 @@ export default function OnboardingPage() {
 
             {/* First of type */}
             <div className="flex flex-col gap-2">
-              <p className="text-sm font-semibold" style={{ color: 'var(--color-pm-text)' }}>
-                Is this your first {birthLabel}?
-              </p>
+              <div className="flex items-center gap-2">
+                <p className="text-sm font-semibold" style={{ color: 'var(--color-pm-text)' }}>
+                  {firstTypeQuestion}
+                </p>
+                {multipleChildren && (
+                  <button
+                    type="button"
+                    onClick={() => setShowFirstTypeInfo(o => !o)}
+                    className="flex-shrink-0 transition-opacity active:opacity-60"
+                    style={{ color: 'var(--color-pm-text-muted)' }}
+                  >
+                    <Info size={16} weight={showFirstTypeInfo ? 'fill' : 'regular'} />
+                  </button>
+                )}
+              </div>
+              {showFirstTypeInfo && (
+                <div
+                  className="rounded-xl px-3 py-2.5 text-xs leading-relaxed"
+                  style={{ background: '#E8F0DC', color: '#627356', border: '1px solid #AECA9540' }}
+                >
+                  {firstTypeInfoText}
+                </div>
+              )}
               <div className="flex gap-2">
                 {[{ label: 'Yes', value: true }, { label: 'No', value: false }].map(opt => (
                   <button

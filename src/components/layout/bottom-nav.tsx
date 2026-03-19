@@ -1,10 +1,11 @@
 import { NavLink } from 'react-router-dom'
-import { House, ListChecks, BookOpen, UserCircle } from '@phosphor-icons/react'
+import { House, Pulse, ListChecks, Users, UserCircle } from '@phosphor-icons/react'
 
 const NAV_ITEMS = [
   { to: '/home', icon: House, label: 'Home' },
+  { to: '/symptoms', icon: Pulse, label: 'Symptoms' },
   { to: '/routines', icon: ListChecks, label: 'Routines' },
-  { to: '/guides', icon: BookOpen, label: 'Guides' },
+  { to: '/community', icon: Users, label: 'Community' },
   { to: '/profile', icon: UserCircle, label: 'Profile' },
 ]
 

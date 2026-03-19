@@ -11,6 +11,16 @@ export type RecoveryFocus =
 
 export type WeeksSinceBirth = '<3' | '3-6' | '6+'
 
+export interface HealthcareDetails {
+  midwifeName: string
+  midwifePhone: string
+  gpName: string
+  gpPhone: string
+  healthAdvisorName: string
+  healthAdvisorPhone: string
+  hospitalName: string
+}
+
 interface AppState {
   // UI
   isQuickLogOpen: boolean
@@ -29,6 +39,16 @@ interface AppState {
   recoveryFocus: RecoveryFocus | null
   weeklyRoutineTarget: number
 
+  // Healthcare
+  healthcareDetails: HealthcareDetails
+
+  // Reminders
+  reminderEnabled: boolean
+  reminderTime: string
+
+  // Partner
+  partnerInviteToken: string | null
+
   // Actions
   openQuickLog: () => void
   closeQuickLog: () => void
@@ -42,6 +62,10 @@ interface AppState {
   }) => void
   setGoal: (focus: RecoveryFocus, weeklyTarget: number) => void
   completeOnboarding: (displayName: string, babyBirthDate: string) => void
+  setHealthcareDetails: (details: HealthcareDetails) => void
+  updateBirthDetails: (birthType: BirthType, babyBirthDate: string) => void
+  setReminder: (enabled: boolean, time: string) => void
+  generatePartnerToken: () => string
 }
 
 export const useAppStore = create<AppState>()(
@@ -58,6 +82,18 @@ export const useAppStore = create<AppState>()(
       weeksSinceBirth: null,
       recoveryFocus: null,
       weeklyRoutineTarget: 3,
+      healthcareDetails: {
+        midwifeName: '',
+        midwifePhone: '',
+        gpName: '',
+        gpPhone: '',
+        healthAdvisorName: '',
+        healthAdvisorPhone: '',
+        hospitalName: '',
+      },
+      reminderEnabled: false,
+      reminderTime: '09:00',
+      partnerInviteToken: null,
 
       openQuickLog: () => set({ isQuickLogOpen: true }),
       closeQuickLog: () => set({ isQuickLogOpen: false }),
@@ -79,6 +115,18 @@ export const useAppStore = create<AppState>()(
 
       completeOnboarding: (displayName, babyBirthDate) =>
         set({ onboardingComplete: true, displayName, babyBirthDate }),
+
+      setHealthcareDetails: (details) => set({ healthcareDetails: details }),
+
+      updateBirthDetails: (birthType, babyBirthDate) => set({ birthType, babyBirthDate }),
+
+      setReminder: (enabled, time) => set({ reminderEnabled: enabled, reminderTime: time }),
+
+      generatePartnerToken: () => {
+        const token = crypto.randomUUID()
+        set({ partnerInviteToken: token })
+        return token
+      },
     }),
     { name: 'postmum-v1' }
   )

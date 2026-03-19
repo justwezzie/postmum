@@ -10,6 +10,7 @@ interface Routine {
   duration: string
   steps: string[]
   week: number
+  videoUrl: string
 }
 
 const ROUTINES: Routine[] = [
@@ -18,6 +19,7 @@ const ROUTINES: Routine[] = [
     title: 'Breathing & Relaxation',
     duration: '5 min',
     week: 1,
+    videoUrl: 'https://www.youtube.com/watch?v=ThKahimNQP0',
     steps: [
       'Lie on your back with knees bent',
       'Inhale slowly for 4 counts through your nose',
@@ -31,6 +33,7 @@ const ROUTINES: Routine[] = [
     title: 'Gentle Pelvic Floor',
     duration: '5 min',
     week: 1,
+    videoUrl: 'https://www.youtube.com/watch?v=-hSZqmuN41E',
     steps: [
       'Lie comfortably with knees bent',
       'Gently squeeze your pelvic floor muscles',
@@ -44,6 +47,7 @@ const ROUTINES: Routine[] = [
     title: 'Gentle Core Activation',
     duration: '8 min',
     week: 3,
+    videoUrl: 'https://www.youtube.com/watch?v=ue4wcRcRGik',
     steps: [
       'Lie on your back, knees bent, feet flat',
       'Take a breath in; as you exhale, gently draw your belly button toward your spine',
@@ -57,6 +61,7 @@ const ROUTINES: Routine[] = [
     title: 'Posture & Short Walk',
     duration: '10 min',
     week: 3,
+    videoUrl: 'https://www.youtube.com/watch?v=Lpf8kqpg86I',
     steps: [
       'Stand tall with shoulders back and relaxed',
       'Begin walking at a comfortable, gentle pace',
@@ -70,6 +75,7 @@ const ROUTINES: Routine[] = [
     title: 'Progressive Core',
     duration: '12 min',
     week: 6,
+    videoUrl: 'https://www.youtube.com/watch?v=ZPFc2noQGaw',
     steps: [
       'Lie on your back with knees bent',
       'Inhale; on exhale, lift head and shoulders slightly',
@@ -175,12 +181,16 @@ export default function RoutinesPage() {
                       </p>
                     </div>
                   </div>
-                  <div
-                    className="w-8 h-8 rounded-xl flex items-center justify-center"
+                  <a
+                    href={routine.videoUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={e => e.stopPropagation()}
+                    className="w-8 h-8 rounded-xl flex items-center justify-center flex-shrink-0"
                     style={{ background: 'var(--color-pm-bg)', color: 'var(--color-pm-primary)' }}
                   >
                     <Play size={14} weight="fill" />
-                  </div>
+                  </a>
                 </button>
 
                 {isExpanded && (
