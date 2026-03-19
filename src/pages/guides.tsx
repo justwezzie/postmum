@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Card } from '../components/ui/card'
-import { MagnifyingGlass, Pill, FirstAid, Brain, Baby, ArrowRight, Heart, ChatCircle, Users, Drop, Bed, ForkKnife } from '@phosphor-icons/react'
+import { MagnifyingGlass, Pill, FirstAid, Brain, Baby, ArrowRight, Heart, ChatCircle, Drop, Bed, ForkKnife } from '@phosphor-icons/react'
 
 type Tab = 'guides' | 'following' | 'for_you'
 
