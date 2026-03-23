@@ -49,6 +49,9 @@ interface AppState {
   // Partner
   partnerInviteToken: string | null
 
+  // Routine completions (date → routine IDs completed that day)
+  routineCompletions: Record<string, string[]>
+
   // Actions
   openQuickLog: () => void
   closeQuickLog: () => void
@@ -66,6 +69,7 @@ interface AppState {
   updateBirthDetails: (birthType: BirthType, babyBirthDate: string) => void
   setReminder: (enabled: boolean, time: string) => void
   generatePartnerToken: () => string
+  toggleRoutineComplete: (date: string, routineId: string) => void
 }
 
 export const useAppStore = create<AppState>()(
@@ -94,6 +98,7 @@ export const useAppStore = create<AppState>()(
       reminderEnabled: false,
       reminderTime: '09:00',
       partnerInviteToken: null,
+      routineCompletions: {},
 
       openQuickLog: () => set({ isQuickLogOpen: true }),
       closeQuickLog: () => set({ isQuickLogOpen: false }),
@@ -126,6 +131,15 @@ export const useAppStore = create<AppState>()(
         const token = crypto.randomUUID()
         set({ partnerInviteToken: token })
         return token
+      },
+
+      toggleRoutineComplete: (date, routineId) => {
+        const { routineCompletions } = get()
+        const current = routineCompletions[date] ?? []
+        const updated = current.includes(routineId)
+          ? current.filter(id => id !== routineId)
+          : [...current, routineId]
+        set({ routineCompletions: { ...routineCompletions, [date]: updated } })
       },
     }),
     { name: 'postmum-v1' }

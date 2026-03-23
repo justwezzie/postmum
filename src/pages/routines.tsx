@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { format } from 'date-fns'
 import { Card } from '../components/ui/card'
 import { useAppStore } from '../stores/app-store'
 import { usePostpartumWeek } from '../hooks/use-postpartum-week'
@@ -87,21 +88,18 @@ const ROUTINES: Routine[] = [
 ]
 
 export default function RoutinesPage() {
-  const { babyBirthDate, weeklyRoutineTarget } = useAppStore()
+  const { babyBirthDate, weeklyRoutineTarget, routineCompletions, toggleRoutineComplete } = useAppStore()
   const week = usePostpartumWeek(babyBirthDate) ?? 1
   const [expandedId, setExpandedId] = useState<string | null>(null)
-  const [completed, setCompleted] = useState<Set<string>>(new Set())
+
+  const today = format(new Date(), 'yyyy-MM-dd')
+  const todayCompleted = new Set(routineCompletions[today] ?? [])
 
   const available = ROUTINES.filter(r => r.week <= week)
   const upcoming = ROUTINES.filter(r => r.week > week)
 
   function toggleComplete(id: string) {
-    setCompleted(prev => {
-      const next = new Set(prev)
-      if (next.has(id)) next.delete(id)
-      else next.add(id)
-      return next
-    })
+    toggleRoutineComplete(today, id)
   }
 
   return (
@@ -111,7 +109,7 @@ export default function RoutinesPage() {
           Routines
         </h1>
         <p className="text-sm mt-1" style={{ color: 'var(--color-pm-text-secondary)' }}>
-          Target: {weeklyRoutineTarget}× this week · {completed.size} done today
+          Target: {weeklyRoutineTarget}× this week · {todayCompleted.size} done today
         </p>
       </div>
 
@@ -125,7 +123,7 @@ export default function RoutinesPage() {
             This week
           </p>
           <p className="text-xs" style={{ color: 'var(--color-pm-text-muted)' }}>
-            {completed.size} / {weeklyRoutineTarget}
+            {todayCompleted.size} / {weeklyRoutineTarget}
           </p>
         </div>
         <div className="flex gap-1.5">
@@ -133,7 +131,7 @@ export default function RoutinesPage() {
             <div
               key={i}
               className="flex-1 h-2 rounded-full"
-              style={{ background: i < completed.size ? 'var(--color-pm-primary)' : 'var(--color-pm-border)' }}
+              style={{ background: i < todayCompleted.size ? 'var(--color-pm-primary)' : 'var(--color-pm-border)' }}
             />
           ))}
         </div>
@@ -147,7 +145,7 @@ export default function RoutinesPage() {
         <div className="flex flex-col gap-3">
           {available.map(routine => {
             const isExpanded = expandedId === routine.id
-            const isDone = completed.has(routine.id)
+            const isDone = todayCompleted.has(routine.id)
 
             return (
               <div

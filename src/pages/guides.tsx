@@ -656,15 +656,37 @@ export default function CommunityPage() {
 
       {/* Following tab */}
       {activeTab === 'following' && (
-        <div className="flex flex-col gap-3">
-          {FOLLOWING_POSTS.map(post => <PostCard key={post.id} post={post} />)}
+        <div className="flex flex-col items-center justify-center py-16 gap-4">
+          <div
+            className="w-14 h-14 rounded-2xl flex items-center justify-center"
+            style={{ background: 'var(--color-pm-surface)', border: '1.5px solid var(--color-pm-border)' }}
+          >
+            <ChatCircle size={26} color="var(--color-pm-text-muted)" />
+          </div>
+          <div className="flex flex-col items-center gap-1 text-center">
+            <p className="text-base font-semibold" style={{ color: 'var(--color-pm-text)' }}>Coming soon</p>
+            <p className="text-sm max-w-xs" style={{ color: 'var(--color-pm-text-muted)' }}>
+              Follow other mothers and see their updates here.
+            </p>
+          </div>
         </div>
       )}
 
       {/* For You tab */}
       {activeTab === 'for_you' && (
-        <div className="flex flex-col gap-3">
-          {FOR_YOU_POSTS.map(post => <PostCard key={post.id} post={post} />)}
+        <div className="flex flex-col items-center justify-center py-16 gap-4">
+          <div
+            className="w-14 h-14 rounded-2xl flex items-center justify-center"
+            style={{ background: 'var(--color-pm-surface)', border: '1.5px solid var(--color-pm-border)' }}
+          >
+            <Heart size={26} color="var(--color-pm-text-muted)" />
+          </div>
+          <div className="flex flex-col items-center gap-1 text-center">
+            <p className="text-base font-semibold" style={{ color: 'var(--color-pm-text)' }}>Coming soon</p>
+            <p className="text-sm max-w-xs" style={{ color: 'var(--color-pm-text-muted)' }}>
+              Personalised posts from the community, curated for where you are in your recovery.
+            </p>
+          </div>
         </div>
       )}
 
