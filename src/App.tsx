@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { AppShell } from './components/layout/app-shell'
@@ -10,11 +11,24 @@ import SymptomsPage from './pages/symptoms'
 import OnboardingPage from './pages/onboarding'
 import AuthPage from './pages/auth'
 import { useAppStore } from './stores/app-store'
+import { supabase } from './lib/supabase'
 
 const queryClient = new QueryClient()
 
 function RootRedirect() {
   const onboardingComplete = useAppStore(s => s.onboardingComplete)
+  const markOnboardingComplete = useAppStore(s => s.markOnboardingComplete)
+  const [sessionChecked, setSessionChecked] = useState(false)
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) markOnboardingComplete()
+      setSessionChecked(true)
+    })
+  }, [markOnboardingComplete])
+
+  if (!sessionChecked && !onboardingComplete) return null
+
   return onboardingComplete ? <Navigate to="/home" replace /> : <Navigate to="/onboarding" replace />
 }
 

@@ -64,6 +64,7 @@ interface AppState {
     weeksSinceBirth: WeeksSinceBirth
   }) => void
   setGoal: (focus: RecoveryFocus, weeklyTarget: number) => void
+  markOnboardingComplete: () => void
   completeOnboarding: (displayName: string, babyBirthDate: string) => void
   setHealthcareDetails: (details: HealthcareDetails) => void
   updateBirthDetails: (birthType: BirthType, babyBirthDate: string) => void
@@ -117,6 +118,8 @@ export const useAppStore = create<AppState>()(
 
       setGoal: (focus, weeklyTarget) =>
         set({ recoveryFocus: focus, weeklyRoutineTarget: weeklyTarget }),
+
+      markOnboardingComplete: () => set({ onboardingComplete: true }),
 
       completeOnboarding: (displayName, babyBirthDate) =>
         set({ onboardingComplete: true, displayName, babyBirthDate }),
