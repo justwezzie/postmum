@@ -22,10 +22,26 @@ function RootRedirect() {
   const [sessionChecked, setSessionChecked] = useState(false)
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) markOnboardingComplete()
-      setSessionChecked(true)
-    })
+    let cancelled = false
+    const fallback = setTimeout(() => {
+      if (!cancelled) setSessionChecked(true)
+    }, 3000)
+
+    supabase.auth.getSession()
+      .then(({ data: { session } }) => {
+        if (cancelled) return
+        if (session) markOnboardingComplete()
+        setSessionChecked(true)
+      })
+      .catch(() => {
+        if (!cancelled) setSessionChecked(true)
+      })
+      .finally(() => clearTimeout(fallback))
+
+    return () => {
+      cancelled = true
+      clearTimeout(fallback)
+    }
   }, [markOnboardingComplete])
 
   if (!sessionChecked && !onboardingComplete) return null
