@@ -10,6 +10,8 @@ import ProfilePage from './pages/profile'
 import SymptomsPage from './pages/symptoms'
 import OnboardingPage from './pages/onboarding'
 import AuthPage from './pages/auth'
+import LandingPage from './pages/landing'
+import BrandTheMarginsPage from './pages/brand-the-margins'
 import { useAppStore } from './stores/app-store'
 import { supabase } from './lib/supabase'
 
@@ -29,7 +31,7 @@ function RootRedirect() {
 
   if (!sessionChecked && !onboardingComplete) return null
 
-  return onboardingComplete ? <Navigate to="/home" replace /> : <Navigate to="/onboarding" replace />
+  return onboardingComplete ? <Navigate to="/home" replace /> : <Navigate to="/landing" replace />
 }
 
 export default function App() {
@@ -38,8 +40,10 @@ export default function App() {
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<RootRedirect />} />
+          <Route path="/landing" element={<LandingPage />} />
           <Route path="/onboarding" element={<OnboardingPage />} />
           <Route path="/auth" element={<AuthPage />} />
+          <Route path="/brand/the-margins" element={<BrandTheMarginsPage />} />
           <Route element={<AppShell />}>
             <Route path="/home" element={<HomePage />} />
             <Route path="/checkin" element={<CheckInPage />} />
