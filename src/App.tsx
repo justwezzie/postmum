@@ -11,7 +11,6 @@ import SymptomsPage from './pages/symptoms'
 import OnboardingPage from './pages/onboarding'
 import AuthPage from './pages/auth'
 import LandingPage from './pages/landing'
-import BrandTheMarginsPage from './pages/brand-the-margins'
 import { useAppStore } from './stores/app-store'
 import { supabase } from './lib/supabase'
 
@@ -43,7 +42,6 @@ export default function App() {
           <Route path="/landing" element={<LandingPage />} />
           <Route path="/onboarding" element={<OnboardingPage />} />
           <Route path="/auth" element={<AuthPage />} />
-          <Route path="/brand/the-margins" element={<BrandTheMarginsPage />} />
           <Route element={<AppShell />}>
             <Route path="/home" element={<HomePage />} />
             <Route path="/checkin" element={<CheckInPage />} />
