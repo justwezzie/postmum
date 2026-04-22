@@ -1,3 +1,4 @@
+import { useState, useRef, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import './landing.css'
 
@@ -118,6 +119,38 @@ function PhoneMockup() {
 
 export default function LandingPage() {
   const navigate = useNavigate()
+  const [form, setForm] = useState({ firstName: '', lastName: '', email: '' })
+  const [submitted, setSubmitted] = useState(false)
+  const [fourPsIndex, setFourPsIndex] = useState(0)
+  const fourPsRef = useRef<HTMLDivElement>(null)
+  const FOUR_PS_COUNT = 4
+
+  function handleEarlyAccess(e: React.FormEvent) {
+    e.preventDefault()
+    setSubmitted(true)
+  }
+
+  function scrollFourPs(dir: number) {
+    const el = fourPsRef.current
+    if (!el) return
+    el.scrollBy({ left: dir * el.offsetWidth, behavior: 'smooth' })
+  }
+
+  useEffect(() => {
+    const el = fourPsRef.current
+    if (!el) return
+    const sync = () => {
+      const w = el.offsetWidth
+      if (!w) return
+      setFourPsIndex(Math.max(0, Math.min(Math.round(el.scrollLeft / w), FOUR_PS_COUNT - 1)))
+    }
+    el.addEventListener('scroll', sync, { passive: true })
+    el.addEventListener('scrollend', sync, { passive: true })
+    return () => {
+      el.removeEventListener('scroll', sync)
+      el.removeEventListener('scrollend', sync)
+    }
+  }, [])
 
   return (
     <div style={{ fontFamily: BF, background: C.parch, color: C.ink, fontSize: 16, lineHeight: 1.6, WebkitFontSmoothing: 'antialiased' }}>
@@ -134,9 +167,9 @@ export default function LandingPage() {
         top: 0,
         zIndex: 100,
       }}>
-        <div style={{ fontFamily: HF, fontSize: 22, fontWeight: 300, color: C.olive, letterSpacing: '.02em' }}>
+        <a href="/" style={{ fontFamily: HF, fontSize: 22, fontWeight: 300, color: C.olive, letterSpacing: '.02em', textDecoration: 'none' }}>
           Post<em style={{ fontStyle: 'italic', color: C.terra }}>mum</em>
-        </div>
+        </a>
         <div className="lp-nav-links">
           {['The four Ps', 'Features', 'Contact'].map((link) => (
             <a key={link} href={`#${link === 'The four Ps' ? 'four-ps' : link === 'Features' ? 'features' : 'founder'}`}
@@ -177,54 +210,96 @@ export default function LandingPage() {
           <BotanicalBranch />
         </div>
 
-        <div style={{ position: 'relative', zIndex: 1 }}>
-          <div style={{ fontFamily: BF, fontSize: 10, fontWeight: 600, letterSpacing: '.22em', textTransform: 'uppercase', color: C.sand, marginBottom: 16 }}>
-            Now in web beta · iOS coming soon
-          </div>
-          <h1 style={{ fontFamily: HF, fontSize: 'clamp(2.8rem, 5.5vw, 4.2rem)', fontWeight: 300, color: C.parch, letterSpacing: '.02em', lineHeight: 1.05, marginBottom: 8, margin: 0 }}>
-            Postmum is<br />for <em style={{ fontStyle: 'italic', color: C.sand }}>you, after baby.</em>
+        <div className="lp-hero-text" style={{ position: 'relative', zIndex: 1 }}>
+          <h1 style={{ fontFamily: HF, fontSize: 'clamp(2.8rem, 5.5vw, 4.2rem)', fontWeight: 300, color: C.parch, letterSpacing: '.02em', lineHeight: 1.05, margin: 0 }}>
+            Postmum is<br />for <em style={{ fontStyle: 'italic', color: C.sand }}>you,</em><br />after baby.
           </h1>
           <WavyUnderline width={160} color={C.sand} />
-          <p style={{ fontFamily: BF, fontSize: 17, lineHeight: 1.75, color: 'rgba(250,247,242,.7)', marginTop: 20, marginBottom: 36, maxWidth: 440 }}>
-            A postpartum recovery platform built entirely around the woman who just gave birth. Evidence-based, honest, and built for the next two years — not just the first six weeks.
+          <p style={{ fontFamily: BF, fontSize: 17, lineHeight: 1.75, color: 'rgba(250,247,242,.82)', marginTop: 18, marginBottom: 32, maxWidth: 440, textAlign: 'center' }}>
+            Whilst everyone is focused on baby, we are focused on you.
           </p>
-          <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
-            <button
-              onClick={() => navigate('/onboarding')}
-              style={{ background: C.terra, color: '#fff', fontFamily: BF, fontSize: 15, fontWeight: 500, padding: '14px 28px', borderRadius: 4, border: `2px solid ${C.terra}`, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 8 }}
-            >
-              <svg width={16} height={16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" aria-hidden="true"><polygon points="5 3 19 12 5 21 5 3" /></svg>
-              Try the web app
-            </button>
-            <a
-              href="https://tiktok.com/@postmum"
-              target="_blank"
-              rel="noopener noreferrer"
-              style={{ background: 'rgba(255,255,255,.1)', color: 'rgba(250,247,242,.85)', fontFamily: BF, fontSize: 15, fontWeight: 500, padding: '14px 28px', borderRadius: 4, border: '2px solid rgba(255,255,255,.25)', cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 8, textDecoration: 'none' }}
-            >
-              <svg width={16} height={16} viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 0 0-.79-.05 6.34 6.34 0 0 0-6.34 6.34 6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.33-6.34V8.69a8.24 8.24 0 0 0 4.83 1.55V6.79a4.85 4.85 0 0 1-1.06-.1z" /></svg>
-              Watch on TikTok
-            </a>
-          </div>
+
+          {submitted ? (
+            <div style={{ background: 'rgba(255,255,255,.1)', border: '1px solid rgba(255,255,255,.2)', borderRadius: 12, padding: '24px 20px', maxWidth: 440 }}>
+              <div style={{ fontFamily: HF, fontSize: 20, fontWeight: 300, color: C.parch, marginBottom: 6 }}>You're on the list.</div>
+              <div style={{ fontFamily: BF, fontSize: 14, color: 'rgba(250,247,242,.6)', lineHeight: 1.6 }}>We'll be in touch when iOS launches. In the meantime, the web app is live and free.</div>
+              <button onClick={() => navigate('/onboarding')} style={{ marginTop: 16, background: 'transparent', color: C.sand, fontFamily: BF, fontSize: 14, fontWeight: 500, border: 'none', cursor: 'pointer', padding: 0, textDecoration: 'underline', textUnderlineOffset: 3 }}>
+                Try the web beta →
+              </button>
+            </div>
+          ) : (
+            <form onSubmit={handleEarlyAccess} style={{ maxWidth: 440, paddingBottom: 20 }}>
+              <div className="lp-hero-name-row" style={{ marginBottom: 20 }}>
+                <input
+                  type="text"
+                  placeholder="First name"
+                  aria-label="First name"
+                  value={form.firstName}
+                  onChange={e => setForm(f => ({ ...f, firstName: e.target.value }))}
+                  required
+                  style={{ background: 'rgba(250,247,242,.1)', border: '1.5px solid rgba(255,255,255,.18)', borderRadius: 8, padding: '14px 16px', fontFamily: BF, fontSize: 15, color: C.parch, outline: 'none' }}
+                />
+                <input
+                  type="text"
+                  placeholder="Last name"
+                  aria-label="Last name"
+                  value={form.lastName}
+                  onChange={e => setForm(f => ({ ...f, lastName: e.target.value }))}
+                  required
+                  style={{ background: 'rgba(250,247,242,.1)', border: '1.5px solid rgba(255,255,255,.18)', borderRadius: 8, padding: '14px 16px', fontFamily: BF, fontSize: 15, color: C.parch, outline: 'none' }}
+                />
+              </div>
+              <input
+                type="email"
+                placeholder="Email address"
+                aria-label="Email address"
+                value={form.email}
+                onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
+                required
+                style={{ width: '100%', boxSizing: 'border-box', background: 'rgba(250,247,242,.1)', border: '1.5px solid rgba(255,255,255,.18)', borderRadius: 8, padding: '14px 16px', fontFamily: BF, fontSize: 15, color: C.parch, outline: 'none', marginBottom: 20 }}
+              />
+              <button
+                type="submit"
+                style={{ width: '100%', background: C.terra, color: '#fff', fontFamily: BF, fontSize: 15, fontWeight: 500, padding: '15px 24px', borderRadius: 8, border: `2px solid ${C.terra}`, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}
+              >
+                <svg width={16} height={16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" aria-hidden="true"><path d="M12 2a10 10 0 0 1 0 20m0-20a10 10 0 0 0 0 20M12 8l4 4-4 4M8 12h8" /></svg>
+                Get early iOS access
+              </button>
+              <div style={{ textAlign: 'center', marginTop: 14 }}>
+                <button
+                  type="button"
+                  onClick={() => navigate('/onboarding')}
+                  style={{ background: 'transparent', border: 'none', fontFamily: BF, fontSize: 14, color: 'rgba(250,247,242,.72)', cursor: 'pointer', padding: 0 }}
+                >
+                  or try out the web beta →
+                </button>
+              </div>
+            </form>
+          )}
         </div>
 
         <div className="lp-phone-wrap"><PhoneMockup /></div>
       </section>
 
       {/* ── Trust bar ── */}
-      <div className="lp-trust-bar" style={{ background: C.tint, borderBottom: `1px solid ${C.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 40, flexWrap: 'wrap' }}>
-        {[
-          { icon: <svg width={16} height={16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /></svg>, label: 'Evidence-based content' },
-          { icon: <svg width={16} height={16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" aria-hidden="true"><circle cx={12} cy={12} r={10} /><polyline points="12 6 12 12 16 14" /></svg>, label: 'Built for the full 2 years' },
-          { icon: <svg width={16} height={16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" aria-hidden="true"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx={9} cy={7} r={4} /><path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg>, label: 'Peer community included' },
-          { icon: <svg width={16} height={16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" aria-hidden="true"><rect x={3} y={11} width={18} height={11} rx={2} ry={2} /><path d="M7 11V7a5 5 0 0 1 10 0v4" /></svg>, label: 'Your data stays yours' },
-          { icon: <svg width={16} height={16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" aria-hidden="true"><polyline points="20 6 9 17 4 12" /></svg>, label: 'Free in beta' },
-        ].map(({ icon, label }) => (
-          <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 8, fontFamily: BF, fontSize: 13, color: C.muted }}>
-            <span style={{ opacity: .6 }}>{icon}</span>
-            {label}
-          </div>
-        ))}
+      <div className="lp-trust-bar" style={{ background: C.tint, borderBottom: `1px solid ${C.border}` }} aria-label="Postmum highlights">
+        <div className="lp-trust-bar-track" role="marquee" aria-live="off">
+          {[1, 2].flatMap(copy =>
+            [
+              { icon: <svg key={`shield-${copy}`} width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" aria-hidden="true"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /></svg>, label: 'Evidence-based content' },
+              { icon: <svg key={`clock-${copy}`} width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" aria-hidden="true"><circle cx={12} cy={12} r={10} /><polyline points="12 6 12 12 16 14" /></svg>, label: 'Built for the full 2 years' },
+              { icon: <svg key={`peers-${copy}`} width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" aria-hidden="true"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx={9} cy={7} r={4} /><path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg>, label: 'Peer community included' },
+              { icon: <svg key={`lock-${copy}`} width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" aria-hidden="true"><rect x={3} y={11} width={18} height={11} rx={2} ry={2} /><path d="M7 11V7a5 5 0 0 1 10 0v4" /></svg>, label: 'Your data stays yours' },
+              { icon: <svg key={`check-${copy}`} width={14} height={14} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" aria-hidden="true"><polyline points="20 6 9 17 4 12" /></svg>, label: 'Free in beta' },
+            ].map(({ icon, label }) => (
+              <div key={`${label}-${copy}`} aria-hidden={copy === 2 ? true : undefined} style={{ display: 'flex', alignItems: 'center', gap: 7, fontFamily: BF, fontSize: 13, color: C.muted, whiteSpace: 'nowrap', padding: '0 32px' }}>
+                <span style={{ color: C.oliveLt, flexShrink: 0 }}>{icon}</span>
+                {label}
+                <span style={{ marginLeft: 32, opacity: 0.25 }}>·</span>
+              </div>
+            ))
+          )}
+        </div>
       </div>
 
       {/* ── Problem ── */}
@@ -238,23 +313,117 @@ export default function LandingPage() {
         <div style={{ display: 'flex', justifyContent: 'center', marginTop: 4 }}>
           <WavyUnderline width={200} color={C.terra} />
         </div>
-        <p style={{ fontFamily: BF, fontSize: 17, lineHeight: 1.8, color: C.ink2, maxWidth: 640, margin: '20px auto 0' }}>
-          You were told about trimesters and birth plans. Nobody told you about the pelvic floor, the hair loss, the identity shift, or the pain that doesn't have a name because it's been normalised. Postmum was built to close that gap.
-        </p>
-        <div className="lp-stats-grid" style={{ display: 'grid', gap: 24, marginTop: 60, textAlign: 'left' }}>
-          {[
-            { num: '2', unit: ' years', body: 'Minimum duration of postpartum recovery. Most women are told six weeks.' },
-            { num: '10', unit: ' min', body: 'Average time given to mum at the six-week postnatal check. Mostly about the baby.' },
-            { num: '0', unit: '', body: 'Apps in the UK built specifically for postpartum maternal recovery. Until now.' },
-          ].map(({ num, unit, body }) => (
-            <div key={num + unit} style={{ background: C.cream, borderRadius: 16, padding: 28, position: 'relative', overflow: 'hidden' }}>
-              <div style={{ fontFamily: HF, fontSize: 52, fontWeight: 200, color: C.olive, letterSpacing: '.02em', lineHeight: 1, marginBottom: 8 }}>
-                <em style={{ fontStyle: 'italic', color: C.terra }}>{num}</em>
-                {unit && <span style={{ fontSize: 28, opacity: .6 }}>{unit}</span>}
-              </div>
-              <div style={{ fontFamily: BF, fontSize: 14, color: C.ink2, lineHeight: 1.55 }}>{body}</div>
+        <div className="lp-stats-grid" style={{ display: 'grid', gap: 24, marginTop: 60 }}>
+
+          {/* ── 2 years ── */}
+          <div style={{ borderRadius: 20, overflow: 'hidden', textAlign: 'center', display: 'flex', flexDirection: 'column' }}>
+            <div style={{ background: 'transparent', padding: '40px 32px 0', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+              <svg width={180} height={160} viewBox="0 0 180 160" fill="none" aria-hidden="true">
+                {/* hourglass body */}
+                <path d="M62 20h56L90 80 62 20z" fill={C.cream} stroke={C.terra} strokeWidth={2} strokeLinejoin="round" />
+                <path d="M62 140h56L90 80 62 140z" fill={`${C.terra}22`} stroke={C.terra} strokeWidth={2} strokeLinejoin="round" />
+                {/* sand flowing */}
+                <path d="M83 76Q87 82 90 80Q93 78 97 76" stroke={C.terra} strokeWidth={1.5} strokeLinecap="round" opacity={0.5} />
+                <path d="M90 80Q90 90 90 95" stroke={C.terra} strokeWidth={2} strokeLinecap="round" />
+                {/* sand pile at bottom */}
+                <path d="M74 130Q82 118 90 115Q98 118 106 130" fill={`${C.terra}33`} stroke={C.terra} strokeWidth={1.5} strokeLinejoin="round" />
+                {/* caps */}
+                <rect x={58} y={13} width={64} height={10} rx={5} fill={C.terra} opacity={0.7} />
+                <rect x={58} y={137} width={64} height={10} rx={5} fill={C.terra} opacity={0.7} />
+                {/* botanical sprigs left */}
+                <path d="M40 90Q28 80 22 65" stroke={C.oliveLt} strokeWidth={1.5} strokeLinecap="round" opacity={0.5} />
+                <path d="M40 90Q30 88 25 78Q34 82 40 90" stroke={C.oliveLt} strokeWidth={1.3} strokeLinecap="round" fill="none" opacity={0.4} />
+                <path d="M40 90Q32 96 28 108" stroke={C.oliveLt} strokeWidth={1.5} strokeLinecap="round" opacity={0.5} />
+                {/* botanical sprigs right */}
+                <path d="M140 90Q152 80 158 65" stroke={C.oliveLt} strokeWidth={1.5} strokeLinecap="round" opacity={0.5} />
+                <path d="M140 90Q150 88 155 78Q146 82 140 90" stroke={C.oliveLt} strokeWidth={1.3} strokeLinecap="round" fill="none" opacity={0.4} />
+                <path d="M140 90Q148 96 152 108" stroke={C.oliveLt} strokeWidth={1.5} strokeLinecap="round" opacity={0.5} />
+              </svg>
             </div>
-          ))}
+            <div style={{ padding: '0 28px 32px' }}>
+              <div style={{ fontFamily: HF, fontSize: 56, fontWeight: 200, color: C.olive, letterSpacing: '.02em', lineHeight: 1, marginBottom: 12 }}>
+                <em style={{ fontStyle: 'italic', color: C.terra }}>2</em>
+                <span style={{ fontSize: 30, opacity: .55 }}> years</span>
+              </div>
+              <div style={{ fontFamily: BF, fontSize: 15, color: C.ink2, lineHeight: 1.6 }}>Minimum duration of postpartum recovery. Most women are told six weeks.</div>
+            </div>
+          </div>
+
+          {/* ── 10 min ── */}
+          <div style={{ borderRadius: 20, overflow: 'hidden', textAlign: 'center', display: 'flex', flexDirection: 'column' }}>
+            <div style={{ background: 'transparent', padding: '40px 32px 0', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+              <svg width={180} height={160} viewBox="0 0 180 160" fill="none" aria-hidden="true">
+                {/* calendar */}
+                <rect x={30} y={28} width={120} height={110} rx={10} fill="white" stroke={C.border} strokeWidth={1.5} />
+                <rect x={30} y={28} width={120} height={36} rx={10} fill={C.oliveLt} opacity={0.25} />
+                <rect x={30} y={52} width={120} height={12} fill={C.oliveLt} opacity={0.25} />
+                {/* calendar rings */}
+                <path d="M65 20v18M115 20v18" stroke={C.terra} strokeWidth={2.5} strokeLinecap="round" />
+                {/* day labels */}
+                {[48, 70, 92, 114, 136].map((x, i) => (
+                  <rect key={i} x={x - 8} y={74} width={16} height={6} rx={3} fill={C.border} opacity={0.6} />
+                ))}
+                {/* week rows — mostly filled */}
+                {[90, 106].map((y, row) =>
+                  [48, 70, 92, 114, 136].map((x, col) => (
+                    <rect key={`${row}-${col}`} x={x - 8} y={y} width={16} height={10} rx={3}
+                      fill={row === 0 && col === 2 ? C.terra : C.border}
+                      opacity={row === 0 && col === 2 ? 0.8 : 0.35} />
+                  ))
+                )}
+                {/* highlighted appointment cell label */}
+                <text x={92} y={100} textAnchor="middle" fontFamily="sans-serif" fontSize={7} fill="white" opacity={0.9}>6wk</text>
+                {/* tiny clock overlay */}
+                <circle cx={136} cy={126} r={18} fill={C.cream} stroke={C.border} strokeWidth={1.5} />
+                <circle cx={136} cy={126} r={14} fill="white" stroke={C.terra} strokeWidth={1.5} opacity={0.6} />
+                <path d="M136 118v8l5 3" stroke={C.terra} strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" />
+                <circle cx={136} cy={126} r={2} fill={C.terra} />
+              </svg>
+            </div>
+            <div style={{ padding: '0 28px 32px' }}>
+              <div style={{ fontFamily: HF, fontSize: 56, fontWeight: 200, color: C.olive, letterSpacing: '.02em', lineHeight: 1, marginBottom: 12 }}>
+                <em style={{ fontStyle: 'italic', color: C.terra }}>10</em>
+                <span style={{ fontSize: 30, opacity: .55 }}> min</span>
+              </div>
+              <div style={{ fontFamily: BF, fontSize: 15, color: C.ink2, lineHeight: 1.6 }}>Average time given to mum at the six-week postnatal check. Mostly about the baby.</div>
+            </div>
+          </div>
+
+          {/* ── 0 ── */}
+          <div style={{ borderRadius: 20, overflow: 'hidden', textAlign: 'center', display: 'flex', flexDirection: 'column' }}>
+            <div style={{ background: 'transparent', padding: '40px 32px 0', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+              <svg width={180} height={160} viewBox="0 0 180 160" fill="none" aria-hidden="true">
+                {/* bulb glow */}
+                <circle cx={90} cy={72} r={44} fill={`${C.sand}18`} />
+                <circle cx={90} cy={72} r={32} fill={`${C.sand}22`} />
+                {/* bulb body */}
+                <path d="M68 72a22 22 0 1 1 44 0c0 8-4 14-8 18v8H76v-8c-4-4-8-10-8-18z" fill="white" stroke={C.terra} strokeWidth={2} strokeLinejoin="round" />
+                {/* base rings */}
+                <path d="M76 98h28M77 104h26M80 110h20" stroke={C.terra} strokeWidth={1.8} strokeLinecap="round" opacity={0.6} />
+                {/* filament */}
+                <path d="M84 86Q88 78 90 72Q92 78 96 86" stroke={C.sand} strokeWidth={1.5} strokeLinecap="round" fill="none" />
+                {/* rays */}
+                <path d="M90 36v-10M90 36v-6" stroke={C.sand} strokeWidth={2} strokeLinecap="round" opacity={0.7} />
+                <path d="M114 44l7-7M114 44l5-5" stroke={C.sand} strokeWidth={2} strokeLinecap="round" opacity={0.6} />
+                <path d="M66 44l-7-7M66 44l-5-5" stroke={C.sand} strokeWidth={2} strokeLinecap="round" opacity={0.6} />
+                <path d="M122 72h10M122 72h6" stroke={C.sand} strokeWidth={2} strokeLinecap="round" opacity={0.6} />
+                <path d="M58 72h-10M58 72h-6" stroke={C.sand} strokeWidth={2} strokeLinecap="round" opacity={0.6} />
+                <path d="M114 100l7 7" stroke={C.sand} strokeWidth={2} strokeLinecap="round" opacity={0.4} />
+                <path d="M66 100l-7 7" stroke={C.sand} strokeWidth={2} strokeLinecap="round" opacity={0.4} />
+                {/* sparkle dots */}
+                <circle cx={56} cy={52} r={2.5} fill={C.sand} opacity={0.5} />
+                <circle cx={124} cy={52} r={2.5} fill={C.sand} opacity={0.5} />
+                <circle cx={90} cy={24} r={3} fill={C.sand} opacity={0.6} />
+              </svg>
+            </div>
+            <div style={{ padding: '0 28px 32px' }}>
+              <div style={{ fontFamily: HF, fontSize: 56, fontWeight: 200, color: C.olive, letterSpacing: '.02em', lineHeight: 1, marginBottom: 12 }}>
+                <em style={{ fontStyle: 'italic', color: C.terra }}>0</em>
+              </div>
+              <div style={{ fontFamily: BF, fontSize: 15, color: C.ink2, lineHeight: 1.6 }}>Apps in the UK built specifically for postpartum maternal recovery. Until now.</div>
+            </div>
+          </div>
+
         </div>
       </section>
 
@@ -273,30 +442,62 @@ export default function LandingPage() {
               Every woman should know these
             </div>
             <h2 style={{ fontFamily: HF, fontSize: 'clamp(1.9rem, 3.5vw, 2.7rem)', fontWeight: 300, color: C.parch, letterSpacing: '.02em', lineHeight: 1.15, margin: 0 }}>
-              The four <em style={{ fontStyle: 'italic', color: C.sand }}>Ps</em> of postpartum.
+              Postmum's <em style={{ fontStyle: 'italic', color: C.sand }}>4 P's</em>
             </h2>
             <WavyUnderline width={180} color={C.sand} />
             <p style={{ fontFamily: BF, fontSize: 16, lineHeight: 1.7, color: 'rgba(250,247,242,.6)', marginTop: 18, maxWidth: 540 }}>
               Nobody tells women these things before they give birth. Postmum covers all four — at your pace, when you're ready.
             </p>
           </div>
-          <div className="lp-four-ps-grid" style={{ display: 'grid', gap: 16 }}>
+          <div
+            className="lp-four-ps-grid"
+            ref={fourPsRef}
+            style={{ gap: 16 }}
+            tabIndex={0}
+            role="region"
+            aria-label="The four Ps — scroll to explore"
+            onKeyDown={e => {
+              if (e.key === 'ArrowLeft') { e.preventDefault(); scrollFourPs(-1) }
+              if (e.key === 'ArrowRight') { e.preventDefault(); scrollFourPs(1) }
+            }}
+          >
             {[
               { title: 'rivates', body: "What's actually happening after birth — vaginal or caesarean. What's normal, what's not, what to watch for and when to act." },
               { title: 'hysical', body: "The full picture: hormones, hair, pelvic floor, core, sleep, nutrition. The bits that feel polite to mention and the bits that don't." },
               { title: 'heel', body: "The anxiety, the identity shift, the relationship strain, the mental load that has no name. Held with warmth, never alarm." },
               { title: 'ain', body: "What's normal-but-uncomfortable versus what needs attention — and how to tell the difference. Information you should have had from day one." },
             ].map(({ title, body }) => (
-              <div key={title} style={{ background: 'rgba(255,255,255,.07)', border: '1px solid rgba(255,255,255,.1)', borderRadius: 16, padding: '28px 24px' }}>
-                <div style={{ width: 48, height: 48, borderRadius: '50%', background: 'rgba(255,255,255,.12)', border: '1.5px solid rgba(255,255,255,.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 18 }}>
-                  <span style={{ fontFamily: HF, fontSize: 20, fontWeight: 400, color: C.parch, letterSpacing: '.02em' }}>P</span>
-                </div>
+              <div key={title} style={{ background: 'rgba(255,255,255,.07)', border: '1px solid rgba(255,255,255,.1)', borderRadius: 16, padding: '28px 24px', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                 <div style={{ fontFamily: HF, fontSize: 20, fontWeight: 400, color: C.parch, letterSpacing: '.02em', marginBottom: 10 }}>
                   <em style={{ fontStyle: 'italic', color: C.sand }}>P{title}</em>
                 </div>
                 <div style={{ fontFamily: BF, fontSize: 14, lineHeight: 1.7, color: 'rgba(250,247,242,.6)' }}>{body}</div>
               </div>
             ))}
+          </div>
+          <div className="lp-carousel-nav">
+            <button className="lp-carousel-arrow" onClick={() => scrollFourPs(-1)} disabled={fourPsIndex === 0} aria-label="Previous">
+              <svg width={16} height={16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" aria-hidden="true"><polyline points="15 18 9 12 15 6" /></svg>
+            </button>
+            <div className="lp-carousel-dots">
+              {Array.from({ length: FOUR_PS_COUNT }).map((_, i) => (
+                <button
+                  key={i}
+                  className={`lp-carousel-dot${i === fourPsIndex ? ' active' : ''}`}
+                  onClick={() => {
+                    const el = fourPsRef.current
+                    if (!el) return
+                    const card = el.children[i] as HTMLElement
+                    el.scrollTo({ left: card.offsetLeft - el.offsetLeft, behavior: 'smooth' })
+                  }}
+                  aria-label={`Go to slide ${i + 1}`}
+                  aria-current={i === fourPsIndex ? true : undefined}
+                />
+              ))}
+            </div>
+            <button className="lp-carousel-arrow" onClick={() => scrollFourPs(1)} disabled={fourPsIndex === FOUR_PS_COUNT - 1} aria-label="Next">
+              <svg width={16} height={16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" aria-hidden="true"><polyline points="9 18 15 12 9 6" /></svg>
+            </button>
           </div>
         </div>
       </section>
@@ -312,7 +513,7 @@ export default function LandingPage() {
             <WavyUnderline width={240} color={C.terra} />
           </div>
         </div>
-        <div className="lp-features-grid" style={{ display: 'grid', gap: 20, marginTop: 56 }}>
+        <div className="lp-features-grid" style={{ marginTop: 56 }}>
           {[
             {
               title: 'Recovery knowledge',
@@ -335,7 +536,7 @@ export default function LandingPage() {
               icon: <svg width={22} height={22} viewBox="0 0 32 32" fill="none" stroke={C.parch} strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M16 27s-11-7.5-11-14a6 6 0 0 1 11-3.4A6 6 0 0 1 27 13c0 6.5-11 14-11 14z"/></svg>,
             },
           ].map(({ title, body, icon }) => (
-            <div key={title} style={{ background: C.cream, borderRadius: 16, padding: 28, border: `1px solid ${C.border}` }}>
+            <div key={title} style={{ background: C.cream, borderRadius: 16, padding: 28, paddingBottom: 48, border: `1px solid ${C.border}`, display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
               <div style={{ width: 44, height: 44, borderRadius: 10, background: C.olive, display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 18, opacity: .9 }}>
                 {icon}
               </div>
@@ -345,25 +546,21 @@ export default function LandingPage() {
           ))}
 
           {/* Healthcare share — coming soon */}
-          <div style={{ background: C.cream, borderRadius: 16, padding: 28, border: `1.5px dashed ${C.border}`, opacity: .6 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 18 }}>
-              <div style={{ width: 44, height: 44, borderRadius: 10, background: C.oliveLt, display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: .7 }}>
-                <svg width={22} height={22} viewBox="0 0 32 32" fill="none" stroke={C.parch} strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 8a4 4 0 0 0-4 4c0 1.5.7 2.8 1.8 3.6A4 4 0 0 0 12 22h8a4 4 0 0 0 2.2-7.4A4 4 0 0 0 18 8h-6z"/><line x1={16} y1={22} x2={16} y2={26}/></svg>
-              </div>
-              <span style={{ fontFamily: BF, fontSize: 10, fontWeight: 600, letterSpacing: '.14em', textTransform: 'uppercase', color: C.muted }}>Coming soon</span>
+          <div aria-disabled="true" style={{ background: C.cream, borderRadius: 16, padding: 28, paddingBottom: 48, border: `1.5px dashed ${C.border}`, opacity: .6, display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
+            <div style={{ width: 44, height: 44, borderRadius: 10, background: C.oliveLt, display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: .7, marginBottom: 10 }}>
+              <svg width={22} height={22} viewBox="0 0 32 32" fill="none" stroke={C.parch} strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M12 8a4 4 0 0 0-4 4c0 1.5.7 2.8 1.8 3.6A4 4 0 0 0 12 22h8a4 4 0 0 0 2.2-7.4A4 4 0 0 0 18 8h-6z"/><line x1={16} y1={22} x2={16} y2={26}/></svg>
             </div>
+            <span style={{ fontFamily: BF, fontSize: 10, fontWeight: 600, letterSpacing: '.14em', textTransform: 'uppercase', color: C.muted, marginBottom: 14, display: 'block' }}>Coming soon</span>
             <div style={{ fontFamily: HF, fontSize: 17, fontWeight: 400, color: C.olive, letterSpacing: '.02em', marginBottom: 8 }}>Healthcare share</div>
             <div style={{ fontFamily: BF, fontSize: 14, lineHeight: 1.65, color: C.ink2 }}>Share your real experience with your GP, midwife, or physio. Your data. So you can get treated properly — not based on a two-minute appointment.</div>
           </div>
 
           {/* Peer community — coming soon */}
-          <div style={{ background: C.cream, borderRadius: 16, padding: 28, border: `1.5px dashed ${C.border}`, opacity: .6 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 18 }}>
-              <div style={{ width: 44, height: 44, borderRadius: 10, background: C.oliveLt, display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: .7 }}>
-                <svg width={22} height={22} viewBox="0 0 32 32" fill="none" stroke={C.parch} strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M6 8a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H12l-6 4V8z"/></svg>
-              </div>
-              <span style={{ fontFamily: BF, fontSize: 10, fontWeight: 600, letterSpacing: '.14em', textTransform: 'uppercase', color: C.muted }}>Coming soon</span>
+          <div aria-disabled="true" style={{ background: C.cream, borderRadius: 16, padding: 28, paddingBottom: 48, border: `1.5px dashed ${C.border}`, opacity: .6, display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center' }}>
+            <div style={{ width: 44, height: 44, borderRadius: 10, background: C.oliveLt, display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: .7, marginBottom: 10 }}>
+              <svg width={22} height={22} viewBox="0 0 32 32" fill="none" stroke={C.parch} strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M6 8a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H12l-6 4V8z"/></svg>
             </div>
+            <span style={{ fontFamily: BF, fontSize: 10, fontWeight: 600, letterSpacing: '.14em', textTransform: 'uppercase', color: C.muted, marginBottom: 14, display: 'block' }}>Coming soon</span>
             <div style={{ fontFamily: HF, fontSize: 17, fontWeight: 400, color: C.olive, letterSpacing: '.02em', marginBottom: 8 }}>Peer community</div>
             <div style={{ fontFamily: BF, fontSize: 14, lineHeight: 1.65, color: C.ink2 }}>Find and follow other mums at the same stage. Not a forum. A community that lets her see she's not alone in what she's going through.</div>
           </div>
@@ -393,17 +590,17 @@ export default function LandingPage() {
               <div style={{ fontFamily: BF, fontSize: 13, color: C.ink2, lineHeight: 1.65 }}>Free access to the full web app · A short feedback form after 2 weeks · The option to be involved in shaping the iOS version. Nothing else. Unsubscribe any time.</div>
             </div>
           </div>
-          <div style={{ display: 'flex', gap: 14, justifyContent: 'center', flexWrap: 'wrap', marginTop: 36 }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12, marginTop: 36 }}>
             <button
               onClick={() => navigate('/onboarding')}
-              style={{ background: C.terra, color: '#fff', fontFamily: BF, fontSize: 16, fontWeight: 500, padding: '16px 32px', borderRadius: 4, border: `2px solid ${C.terra}`, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 10 }}
+              style={{ width: '100%', justifyContent: 'center', background: C.terra, color: '#fff', fontFamily: BF, fontSize: 16, fontWeight: 500, padding: '16px 32px', borderRadius: 4, border: `2px solid ${C.terra}`, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 10 }}
             >
               <svg width={16} height={16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" aria-hidden="true"><polygon points="5 3 19 12 5 21 5 3"/></svg>
               Try the web app
             </button>
             <a
               href="mailto:hello@postmum.com"
-              style={{ background: 'transparent', color: C.olive, fontFamily: BF, fontSize: 16, fontWeight: 500, padding: '16px 32px', borderRadius: 4, border: `2px solid ${C.olive}`, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 10, textDecoration: 'none' }}
+              style={{ width: '100%', boxSizing: 'border-box', justifyContent: 'center', background: 'transparent', color: C.olive, fontFamily: BF, fontSize: 16, fontWeight: 500, padding: '16px 32px', borderRadius: 4, border: `2px solid ${C.olive}`, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 10, textDecoration: 'none' }}
             >
               <svg width={16} height={16} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" aria-hidden="true"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
               Send feedback
@@ -442,11 +639,11 @@ export default function LandingPage() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
           {[
             {
-              href: 'https://tiktok.com/@postmum',
+              href: 'https://tiktok.com/@wearepostmum',
               iconBg: '#000',
               icon: <svg width={22} height={22} viewBox="0 0 24 24" fill="white" aria-hidden="true"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 0 0-.79-.05 6.34 6.34 0 0 0-6.34 6.34 6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.33-6.34V8.69a8.24 8.24 0 0 0 4.83 1.55V6.79a4.85 4.85 0 0 1-1.06-.1z"/></svg>,
               label: 'TikTok',
-              title: '@postmum',
+              title: '@wearepostmum',
               body: 'Behind the build, real talk about postpartum, and the information nobody gives you. Come say hi.',
             },
             {
@@ -476,7 +673,7 @@ export default function LandingPage() {
             </div>
             <div>
               <div style={{ fontFamily: BF, fontSize: 10, textTransform: 'uppercase', letterSpacing: '.14em', color: C.muted, marginBottom: 4 }}>Instagram · Coming soon</div>
-              <div style={{ fontFamily: HF, fontSize: 16, fontWeight: 400, color: C.muted, letterSpacing: '.02em', marginBottom: 4 }}>@postmum</div>
+              <div style={{ fontFamily: HF, fontSize: 16, fontWeight: 400, color: C.muted, letterSpacing: '.02em', marginBottom: 4 }}>@wearepostmum</div>
               <div style={{ fontFamily: BF, fontSize: 13, color: C.ink2, lineHeight: 1.55 }}>Launching with the iOS beta.</div>
             </div>
           </div>
