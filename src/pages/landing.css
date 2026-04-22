@@ -134,9 +134,6 @@
   to   { transform: translateX(-50%); }
 }
 @media (prefers-reduced-motion: reduce) {
-  .lp-trust-bar-track {
-    animation: none;
-  }
   .lp-stats-grid > div > div:first-child svg {
     animation: none;
   }
